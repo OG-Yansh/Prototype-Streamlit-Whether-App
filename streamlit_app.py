@@ -28,7 +28,7 @@ An interactive **Streamlit** app for exploring historical weather in **Delhi**, 
 The app reads data directly from GitHub:
 
 - Delhi weather: CSV — `DailyDelhiClimateTrain_delhi_2017.csv`  
-  `https://raw.githubusercontent.com/Pkun-og/Stream_weather/main/datasets/DailyDelhiClimateTrain_delhi_2017.csv`
+  `https://github.com/OG-Yansh/Prototype-Streamlit-Whether-App/blob/main/datasets/DailyDelhiClimateTrain_delhi_2017.csv`
 - TT Nagar (Bhopal) AQI: Excel — `AQI_ttnagar_Epics.xlsx`  
   `https://github.com/OG-Yansh/Prototype-Streamlit-Whether-App/blob/main/datasets/AQI_ttnagar_Epics.xlsx`
 
