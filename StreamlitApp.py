@@ -80,6 +80,10 @@ def page2(train):
 def prophet_forecast(df, date_col, value_col, title):
     df = df.rename(columns={date_col: "ds", value_col: "y"})
 
+    # critical fix
+    df = df.sort_values("ds")
+    df = df.groupby("ds", as_index=False).mean()
+
     model = Prophet()
     model.fit(df)
 
@@ -90,11 +94,8 @@ def prophet_forecast(df, date_col, value_col, title):
     fig.add_trace(go.Scatter(x=df["ds"], y=df["y"], name="Observed"))
     fig.add_trace(go.Scatter(x=forecast["ds"], y=forecast["yhat"], name="Predicted"))
 
-    fig.update_layout(title=title)
     st.plotly_chart(fig)
-
     return forecast
-
 
 def date_lookup(forecast, label):
     date_input = st.text_input(f"Enter date for {label} (YYYY-MM-DD):", key=label)
