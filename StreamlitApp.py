@@ -16,9 +16,13 @@ warnings.filterwarnings("ignore")
 def load_data():
     url = "https://raw.githubusercontent.com/OG-Yansh/Prototype-Streamlit-Whether-App/main/datasets/DailyDelhiClimateTrain_delhi_2017.csv"
     data = pd.read_csv(url)
-    data["date"] = pd.to_datetime(data["date"])
+
+    data["date"] = pd.to_datetime(data["date"], errors="coerce")
+    data = data.dropna()
+
     data["year"] = data["date"].dt.year
     data["month"] = data["date"].dt.month
+
     return data
 
 
@@ -26,9 +30,13 @@ def load_data():
 def load_train():
     url = "https://raw.githubusercontent.com/OG-Yansh/Prototype-Streamlit-Whether-App/main/datasets/AQI_ttnagar_Epics.xlsx"
     train = pd.read_excel(url, engine="openpyxl")
-    train["Date"] = pd.to_datetime(train["Date"])
-    train = train.drop(["AQI Status", "Benzene (µg/m3)"], axis=1)
+
+    train["Date"] = pd.to_datetime(train["Date"], errors="coerce")
+    train["AQI No."] = pd.to_numeric(train["AQI No."], errors="coerce")
+
+    train = train.drop(["AQI Status", "Benzene (µg/m3)"], axis=1, errors="ignore")
     train = train.dropna()
+
     return train
 
 
@@ -66,23 +74,37 @@ def page2(train):
     st.plotly_chart(fig)
 
     st.subheader("AQI Seasonality")
-    train["year"] = train["Date"].dt.year
-    train["month"] = train["Date"].dt.month
+
+    temp = train.copy()
+    temp["year"] = temp["Date"].dt.year
+    temp["month"] = temp["Date"].dt.month
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    sns.lineplot(data=train, x="month", y="AQI No.", hue="year")
+    sns.lineplot(data=temp, x="month", y="AQI No.", hue="year")
     ax.set_title("AQI Trend by Year")
     st.pyplot(fig)
 
 
-# ===================== FORECAST HELPERS =====================
+# ===================== FORECAST CORE (FIXED) =====================
 
 def prophet_forecast(df, date_col, value_col, title):
     df = df.rename(columns={date_col: "ds", value_col: "y"})
 
-    # critical fix
+    # 🔥 FULL CLEANING (this fixes your crash)
+    df["ds"] = pd.to_datetime(df["ds"], errors="coerce")
+    df["y"] = pd.to_numeric(df["y"], errors="coerce")
+
+    df = df.dropna()
+
+    # Remove duplicates properly
     df = df.sort_values("ds")
-    df = df.groupby("ds", as_index=False).mean()
+    df = df.groupby("ds", as_index=False)["y"].mean()
+    df = df.reset_index(drop=True)
+
+    # Safety check
+    if len(df) < 10:
+        st.error("Not enough data for forecasting.")
+        return pd.DataFrame()
 
     model = Prophet()
     model.fit(df)
@@ -94,10 +116,16 @@ def prophet_forecast(df, date_col, value_col, title):
     fig.add_trace(go.Scatter(x=df["ds"], y=df["y"], name="Observed"))
     fig.add_trace(go.Scatter(x=forecast["ds"], y=forecast["yhat"], name="Predicted"))
 
+    fig.update_layout(title=title)
     st.plotly_chart(fig)
+
     return forecast
 
+
 def date_lookup(forecast, label):
+    if forecast.empty:
+        return
+
     date_input = st.text_input(f"Enter date for {label} (YYYY-MM-DD):", key=label)
 
     if date_input:
@@ -163,6 +191,7 @@ page = st.sidebar.selectbox(
         "Weather Predictor",
     ],
 )
+
 
 def footer():
     st.markdown("---")
