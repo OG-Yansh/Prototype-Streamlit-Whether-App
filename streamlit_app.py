@@ -30,7 +30,7 @@ The app reads data directly from GitHub:
 - Delhi weather: CSV — `DailyDelhiClimateTrain_delhi_2017.csv`  
   `https://raw.githubusercontent.com/Pkun-og/Stream_weather/main/datasets/DailyDelhiClimateTrain_delhi_2017.csv`
 - TT Nagar (Bhopal) AQI: Excel — `AQI_ttnagar_Epics.xlsx`  
-  `https://github.com/Pkun-og/Stream_weather/raw/main/datasets/AQI_ttnagar_Epics.xlsx`
+  `https://github.com/OG-Yansh/Prototype-Streamlit-Whether-App/blob/main/datasets/AQI_ttnagar_Epics.xlsx`
 
 > **Note**: Since datasets are fetched remotely at runtime, you **don’t** need to store them in this repo. An optional local `datasets/` directory is still fine if you want to ship snapshots.
 
